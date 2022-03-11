@@ -9,7 +9,7 @@ public interface IAlunoService {
 
     List<Aluno> getAlunos();
 
-    void saveAluno(Aluno aluno);
+    String saveAluno(Aluno aluno);
 
     void atualizaAluno(Aluno aluno, String id);
 

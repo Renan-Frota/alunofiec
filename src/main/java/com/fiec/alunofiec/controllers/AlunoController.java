@@ -1,10 +1,20 @@
 package com.fiec.alunofiec.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiec.alunofiec.business.models.Aluno;
 import com.fiec.alunofiec.services.IAlunoService;
+import net.coobird.thumbnailator.Thumbnailator;
+import net.coobird.thumbnailator.Thumbnails;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.awt.image.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 @RestController
 @RequestMapping("/alunos")
@@ -39,7 +49,32 @@ public class AlunoController {
         alunoService.deletaAluno(id);
     }
 
+    @PostMapping(value = "/withPhoto", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public void saveAluno(@RequestPart("aluno") String aluno, @RequestPart("photo") MultipartFile file) throws IOException {
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        Aluno newAluno = objectMapper.readValue(aluno, Aluno.class);
+
+
+        String profileImage = UUID.randomUUID() + "_" + Long.toHexString(new Date().getTime());
+        newAluno.setProfileImage(profileImage + ".jpg");
+        alunoService.saveAluno(newAluno);
+        //Files.copy(file.getInputStream(), Paths.get("uploads").resolve(file.getOriginalFilename()) );
+        Path filename = Paths.get("uploads")
+            .resolve(profileImage);
+        Path thumb = Paths.get("uploads")
+            .resolve("thumb_"+profileImage);
+        Thumbnails.of(file.getInputStream())
+            .size(500,500)
+            .outputFormat("jpg")
+            .toFile(new File(filename.toString()));
+        Thumbnails.of(file.getInputStream())
+            .size(100,100)
+            .outputFormat("jpg")
+            .toFile(new File(thumb.toString()));
+
+
+    }
 
 
 }
